@@ -2,7 +2,6 @@ node_modules
 *.js
 npm-debug.log
 node_modules
-Dockerfile
 .prettierrc
 dist
 data
