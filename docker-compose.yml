@@ -1,0 +1,71 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-travellist
+    environment:
+    - NODE_ENV=development
+    - VITE_COVERAGE=true
+    ports:
+      - '80:80'
+    depends_on:
+      - backend
+    networks:
+      - travellist-net
+
+  backend:
+    build:
+      context: ./backend
+    container_name: backend-travellist
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - PGURI=${PGURI}
+    ports:
+      - '3000:3000'
+    networks:
+      - travellist-net
+
+  database:
+    image: postgres:latest
+    container_name: database-travellist
+    environment:
+      - POSTGRES_PASSWORD=${PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+    healthcheck:
+      test: 'pg_isready -U ${DB_USER}'
+      interval: 10s
+      retries: 5
+      start_period: 60s
+      timeout: 10s
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - travellist-net
+
+  cypress:
+    image: "cypress/included:12.0.0"
+    container_name: cypresstests-travellist
+    depends_on:
+      - frontend
+    working_dir: /frontend
+    volumes:
+      - ./frontend:/frontend
+      - ./coverage:/coverage
+      - ./frontend/.nyc_output:/frontend/.nyc_output
+      - ./coverage:/coverage
+      - .:/app
+    networks:
+      - travellist-net
+
+networks:
+  travellist-net:
+    driver: bridge
+
+#https://www.cypress.io/blog/run-cypress-with-a-single-docker-command
+#docker compose up --exit-code-from cypress
+#docker compose run --rm cypress
