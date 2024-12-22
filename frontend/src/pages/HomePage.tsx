@@ -64,8 +64,8 @@ export default function HomePage() {
               Welcome,{firstName}!
             </h2>
             <h5 className='mb-4'>
-              You can click on a country on the map, learn and add it to your
-              lists.
+              You can click on a country on the map, learn about it, and add it
+              to your lists.
             </h5>
             <TravelList
               visitedCountries={visitedCountries}
